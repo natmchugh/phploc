@@ -64,6 +64,9 @@ class PHPLOC_TextUI_ResultPrinter_CSV
         $keys   = array();
         $values = array();
 
+        $keys[]   = 'Date';
+        $values[] = date('c');
+        
         if ($count['directories'] > 0) {
             $keys[]   = 'Directories';
             $values[] = $count['directories'];
@@ -80,7 +83,6 @@ class PHPLOC_TextUI_ResultPrinter_CSV
             $keys[]   = 'Executable Lines of Code (ELOC)';
             $values[] = $count['eloc'];
         }
-
         $keys[]   = 'Comment Lines of Code (CLOC)';
         $values[] = $count['cloc'];
         $keys[]   = 'Non-Comment Lines of Code (NCLOC)';
@@ -130,9 +132,16 @@ class PHPLOC_TextUI_ResultPrinter_CSV
             $keys[]   = 'Test Methods';
             $values[] = $count['testMethods'];
         }
+        $csvContent = "";
+        if (!file_exists($filename)) {
+            $csvContent = implode(',', $keys) . PHP_EOL;  
+        }
+        $csvContent .= implode(',', $values).PHP_EOL;
 
         file_put_contents(
-          $filename, implode(',', $keys) . PHP_EOL . implode(',', $values)
+          $filename,
+           $csvContent,
+           FILE_APPEND
         );
     }
 }
