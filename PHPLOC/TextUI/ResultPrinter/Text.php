@@ -82,7 +82,8 @@ class PHPLOC_TextUI_ResultPrinter_Text
         }
 
         $format .= "Comment Lines of Code (CLOC):                %10d\n" .
-                   "Non-Comment Lines of Code (NCLOC):           %10d\n\n" .
+                   "Non-Comment Lines of Code (NCLOC)s:           %10d\n" .
+                   "Average Tokens per Line:                     %10d\n\n" .
                    "Namespaces:                                  %10d\n" .
                    "Interfaces:                                  %10d\n" .
                    "Traits:                                      %10d\n" .
@@ -107,6 +108,7 @@ class PHPLOC_TextUI_ResultPrinter_Text
 
         $args[] = $count['cloc'];
         $args[] = $count['ncloc'];
+        $args[] = ($count['tokens'] / $count['ncloc']);
         $args[] = $count['namespaces'];
         $args[] = $count['interfaces'];
         $args[] = $count['traits'];

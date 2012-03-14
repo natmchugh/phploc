@@ -76,6 +76,7 @@ class PHPLOC_Analyser
       'nclocClasses'       => 0,
       'cloc'               => 0,
       'ncloc'              => 0,
+      'tokens'             => 0, 
       'eloc'               => 0,
       'ccn'                => 0,
       'ccnMethods'         => 0,
@@ -99,7 +100,7 @@ class PHPLOC_Analyser
       'ccnByLoc'           => 0,
       'ccnByNom'           => 0,
       'nclocByNoc'         => 0,
-      'nclocByNom'         => 0
+      'nclocByNom'         => 0,
     );
 
     /**
@@ -533,6 +534,7 @@ class PHPLOC_Analyser
         $this->count['nclocClasses'] += $nclocClasses;
         $this->count['cloc']         += $cloc;
         $this->count['ncloc']        += $loc - $cloc;
+        $this->count['tokens']       += $numTokens;
         $this->count['files']++;
 
         if (function_exists('bytekit_disassemble_file')) {
