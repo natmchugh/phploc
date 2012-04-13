@@ -199,7 +199,46 @@ class PHPLOC_TextUI_Command
         }
 
         $analyser = new PHPLOC_Analyser($verbose);
-        $count    = $analyser->countFiles($files, $countTests);
+
+
+        if (extension_loaded('pcntl')) {
+                $noThreads = 2;
+                $chunkSize = ceil(count($files) / $noThreads);
+                $chunks = array_chunk($files, $chunkSize);
+                $forks = array();
+                for ($i=0; $i < $noThreads; $i++) {
+                        $forks[] = $pid = pcntl_fork();
+                        if ($pid == -1) {
+                                die('could not fork');
+                        } else if ($pid === 0 ) {
+                                $count    = $analyser->countFiles($chunks[$i], $countTests);
+                                $filename = "/tmp/{$i}_count";
+                                $data = serialize($count);
+                                file_put_contents($filename, $data);
+                                die();
+                 
+                        }
+                }
+                do {
+                    pcntl_wait($status);
+                    array_pop($forks);
+                } while (count($forks) > 0);
+                $count = array();
+                for ($i=0; $i < $noThreads; $i++) {
+                    $filename = "/tmp/{$i}_count";
+                    $data = file_get_contents($filename);
+                    foreach (unserialize($data) as $key => $value) {
+                        if (isset($count[$key])) {
+                            $count[$key] += $value;
+                        } else {
+                             $count[$key] = $value;
+                        }
+
+                    }
+                }
+        } else {
+            $count = $analyser->countFiles($files, $countTests);
+        }
 
         $printer = new PHPLOC_TextUI_ResultPrinter_Text;
         $printer->printResult($count, $countTests);
