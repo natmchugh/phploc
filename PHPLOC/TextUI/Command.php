@@ -117,6 +117,15 @@ class PHPLOC_TextUI_Command
         $input->registerOption(
           new ezcConsoleOption(
             '',
+            'cores',
+            ezcConsoleInput::TYPE_STRING,
+            1
+           )
+        );
+
+        $input->registerOption(
+          new ezcConsoleOption(
+            '',
             'suffixes',
             ezcConsoleInput::TYPE_STRING,
             'php',
@@ -179,6 +188,7 @@ class PHPLOC_TextUI_Command
         $excludes   = $input->getOption('exclude')->value;
         $logXml     = $input->getOption('log-xml')->value;
         $logCsv     = $input->getOption('log-csv')->value;
+        $cores     = $input->getOption('cores')->value;
         $suffixes   = array_map(
                         'trim',
                         explode(',', $input->getOption('suffixes')->value)
@@ -201,18 +211,16 @@ class PHPLOC_TextUI_Command
         $analyser = new PHPLOC_Analyser($verbose);
 
 
-        if (extension_loaded('pcntl')) {
-                $noThreads = 2;
-                $chunkSize = ceil(count($files) / $noThreads);
+        if ($cores > 1 && extension_loaded('pcntl')) {
+                $chunkSize = ceil(count($files) / $cores);
                 $chunks = array_chunk($files, $chunkSize);
                 $forks = array();
-                for ($i=0; $i < $noThreads; $i++) {
+                $tmpDir = sys_get_temp_dir();
+                for ($i=0; $i < $cores; $i++) {
                         $forks[] = $pid = pcntl_fork();
-                        if ($pid == -1) {
-                                die('could not fork');
-                        } else if ($pid === 0 ) {
+                        if ($pid === 0 ) {
                                 $count    = $analyser->countFiles($chunks[$i], $countTests);
-                                $filename = "/tmp/{$i}_count";
+                                $filename = "$tmpDir/{$i}_count";
                                 $data = serialize($count);
                                 file_put_contents($filename, $data);
                                 die();
@@ -224,16 +232,16 @@ class PHPLOC_TextUI_Command
                     array_pop($forks);
                 } while (count($forks) > 0);
                 $count = array();
-                for ($i=0; $i < $noThreads; $i++) {
-                    $filename = "/tmp/{$i}_count";
+                for ($i=0; $i < $cores; $i++) {
+                    $filename = "$tmpDir/{$i}_count";
                     $data = file_get_contents($filename);
+                    unlink($filename);
                     foreach (unserialize($data) as $key => $value) {
                         if (isset($count[$key])) {
                             $count[$key] += $value;
                         } else {
                              $count[$key] = $value;
                         }
-
                     }
                 }
         } else {
@@ -290,6 +298,8 @@ Usage: phploc [switches] <directory|file> ...
   --version                Prints the version and exits.
 
   --verbose                Print progress bar.
+
+  --cores <number_cores>    Parallelize across multiple cores
 
 EOT
 ;
