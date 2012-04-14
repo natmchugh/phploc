@@ -180,6 +180,11 @@ class PHPLOC_Analyser
             print "\n\n";
         }
 
+        return $this->getCount();
+    }
+
+
+    protected function getCount($countTests) {
         $count = $this->count;
 
         if (!function_exists('bytekit_disassemble_file')) {

@@ -212,38 +212,8 @@ class PHPLOC_TextUI_Command
 
 
         if ($cores > 1 && extension_loaded('pcntl')) {
-                $chunkSize = ceil(count($files) / $cores);
-                $chunks = array_chunk($files, $chunkSize);
-                $forks = array();
-                $tmpDir = sys_get_temp_dir();
-                for ($i=0; $i < $cores; $i++) {
-                        $forks[] = $pid = pcntl_fork();
-                        if ($pid === 0 ) {
-                                $count    = $analyser->countFiles($chunks[$i], $countTests);
-                                $filename = "$tmpDir/{$i}_count";
-                                $data = serialize($count);
-                                file_put_contents($filename, $data);
-                                die();
-                 
-                        }
-                }
-                do {
-                    pcntl_wait($status);
-                    array_pop($forks);
-                } while (count($forks) > 0);
-                $count = array();
-                for ($i=0; $i < $cores; $i++) {
-                    $filename = "$tmpDir/{$i}_count";
-                    $data = file_get_contents($filename);
-                    unlink($filename);
-                    foreach (unserialize($data) as $key => $value) {
-                        if (isset($count[$key])) {
-                            $count[$key] += $value;
-                        } else {
-                             $count[$key] = $value;
-                        }
-                    }
-                }
+                $parallelAnalyser = new PHPLOC_ParallelAnalyser($cores);
+                $count = $parallelAnalyser->countFiles($files, $countTests);
         } else {
             $count = $analyser->countFiles($files, $countTests);
         }

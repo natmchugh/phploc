@@ -57,6 +57,7 @@ spl_autoload_register(
         if ($classes === null) {
             $classes = array(
               'phploc_analyser' => '/Analyser.php',
+              'phploc_parallelanalyser' => '/ParallelAnalyser.php',
               'phploc_textui_command' => '/TextUI/Command.php',
               'phploc_textui_resultprinter_csv' => '/TextUI/ResultPrinter/CSV.php',
               'phploc_textui_resultprinter_text' => '/TextUI/ResultPrinter/Text.php',
