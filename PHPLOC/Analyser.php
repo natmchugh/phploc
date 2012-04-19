@@ -65,6 +65,11 @@ class PHPLOC_Analyser
     /**
      * @var array
      */
+    protected $directories = array();
+
+    /**
+     * @var array
+     */
     protected $classes = array();
 
     /**
@@ -155,18 +160,16 @@ class PHPLOC_Analyser
             }
         }
 
-        $directories = array();
-
         if ($this->output !== NULL) {
             $bar = new ezcConsoleProgressbar($this->output, count($files));
             print "Processing files\n";
         }
 
-        foreach ($files as $file) {
+        foreach ($files as $key => $file) {
             $directory = dirname($file);
 
-            if (!isset($directories[$directory])) {
-                $directories[$directory] = TRUE;
+            if (!isset($this->directories[$directory])) {
+                $this->directories[$directory] = TRUE;
             }
 
             $this->countFile($file, $countTests);
@@ -180,7 +183,7 @@ class PHPLOC_Analyser
             print "\n\n";
         }
 
-        return $this->getCount();
+        return $this->getCount($countTests);
     }
 
 
@@ -196,7 +199,7 @@ class PHPLOC_Analyser
             unset($count['testMethods']);
         }
 
-        $count['directories']   = count($directories) - 1;
+        $count['directories']   = count($this->directories) - 1;
         $count['namespaces']    = count($this->namespaces);
         $count['classes']       = $count['abstractClasses'] +
                                   $count['concreteClasses'];

@@ -210,11 +210,10 @@ class PHPLOC_TextUI_Command
 
         $analyser = new PHPLOC_Analyser($verbose);
 
-
-        if ($cores > 1 && extension_loaded('pcntl')) {
-                $parallelAnalyser = new PHPLOC_ParallelAnalyser($cores);
-                $count = $parallelAnalyser->countFiles($files, $countTests);
-        } else {
+        if ($cores > 1 && extension_loaded('pcntl') && extension_loaded('sockets')) {
+            $parallelAnalyser = new PHPLOC_ParallelAnalyser($cores);
+            $count = $parallelAnalyser->countFiles($files, $countTests);
+    } else {
             $count = $analyser->countFiles($files, $countTests);
         }
 
