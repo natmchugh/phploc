@@ -4,7 +4,7 @@ class PHPLOC_ParallelAnalyser extends PHPLOC_Analyser {
 
 	private $_cores;
 
-    const MESSAGE_LENGTH = 100000;
+    const MESSAGE_LENGTH = 8192;
 
 	public function __construct($cores) {
 		$this->_cores = $cores;
@@ -27,7 +27,7 @@ class PHPLOC_ParallelAnalyser extends PHPLOC_Analyser {
                         $data = array(
                             'count' => $this->count,
                             'namespaces' => $this->namespaces,
-                            'directories' => $this->directories,
+                            // 'directories' => $this->directories,
                         );
                         $dataString = serialize($data);
                         socket_set_nonblock($sockets[0]);
@@ -49,9 +49,7 @@ class PHPLOC_ParallelAnalyser extends PHPLOC_Analyser {
             $sockets = $this->socketPairs[$i];
             $childMessage = '';
 
-            while ($message =  socket_read($sockets[1], self::MESSAGE_LENGTH)) {
-                $childMessage .= $message;
-            }
+            $childMessage =  socket_read($sockets[1], self::MESSAGE_LENGTH);
             
             $data = unserialize(trim($childMessage));
             socket_close($sockets[1]);
@@ -71,7 +69,7 @@ class PHPLOC_ParallelAnalyser extends PHPLOC_Analyser {
                 $directories[$directory] = TRUE;
             }
         }
-		$count['directories']   = count($this->directories) - 1;
+		$count['directories']   = count($directories) - 1;
     	return $count;
 	}
 
